@@ -205,6 +205,11 @@
     display: block;
   }
   
+  /* 共通チェックリスト表示 */
+  .shared-checklist {
+    margin-top: 1em;
+  }
+  
   /* レスポンシブ */
   @media (max-width: 480px) {
     body { padding: 0.3em; }
@@ -381,12 +386,13 @@
 </div>
 
 <div class="card">
-<h3>📷 バーコードチェック</h3>
+<h3>📷 チェック方法選択</h3>
 <div class="scan-mode">
 <button class="scan-mode-btn active" data-mode="manual">✋ 手動チェック</button>
 <button class="scan-mode-btn" data-mode="scan">📱 スキャンチェック</button>
 </div>
 
+<!-- 手動チェックモード -->
 <div id="manual-check-mode">
 <div id="check-progress" style="text-align: center; margin: 1em 0; font-weight: 600;"></div>
 <ul id="checklist" class="item-list"></ul>
@@ -397,6 +403,7 @@
 </div>
 </div>
 
+<!-- スキャンチェックモード -->
 <div id="scan-check-mode" style="display: none;">
 <div id="check-viewport"><div class="guide"></div></div>
 <div id="check-status">📷 バーコードを読み取って自動チェック</div>
@@ -405,7 +412,19 @@
 <button id="check-stop-btn" class="btn btn-secondary" disabled>⏹ 停止</button>
 </div>
 <div id="check-result" class="check-result"></div>
-<div style="margin-top: 1em;">
+
+<!-- スキャンモードでも共通のチェック状況表示 -->
+<div class="shared-checklist">
+<div id="scan-check-progress" style="text-align: center; margin: 1em 0; font-weight: 600;"></div>
+<ul id="scan-checklist" class="item-list"></ul>
+<div style="text-align: center; margin-top: 1em;">
+<button id="scan-check-all" class="btn btn-success btn-sm">✅ 全選択</button>
+<button id="scan-uncheck-all" class="btn btn-warning btn-sm">⭕ 全解除</button>
+<button id="scan-reset-check" class="btn btn-secondary btn-sm">🔄 リセット</button>
+</div>
+</div>
+
+<div style="margin-top: 2em;">
 <h4>📊 スキャン結果</h4>
 <ul id="scan-results" class="item-list"></ul>
 </div>
@@ -554,7 +573,7 @@ document.head.appendChild(link);
 
 // Service Worker登録
 const swCode = `
-const CACHE_NAME = 'wasuremono-pro-v2';
+const CACHE_NAME = 'wasuremono-pro-v2.1';
 const urlsToCache = ['./', 'https://unpkg.com/quagga@0.12.1/dist/quagga.min.js'];
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(urlsToCache).catch(() => c.add('./')))));
 self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('./')))));
@@ -648,8 +667,8 @@ let sortBy = 'name';
 let isScanning = false;
 let isCheckScanning = false;
 let editingItem = null;
-let checkMode = 'manual'; // manual or scan
-let scanResults = new Map(); // バーコード別の検出結果
+let checkMode = 'manual';
+let scanResults = new Map();
 
 // UI要素
 const tabs = document.querySelectorAll('.tab-btn');
@@ -674,7 +693,7 @@ tabs.forEach(tab => {
       renderItems();
     } else if (target === 'check') {
       if (!currentDay) selectCurrentDay();
-      renderScanResults();
+      updateCheckDisplay();
     } else if (target === 'settings') {
       updateDetailedStats();
     }
@@ -695,6 +714,7 @@ document.querySelectorAll('.scan-mode-btn').forEach(btn => {
     } else {
       document.getElementById('manual-check-mode').style.display = 'none';
       document.getElementById('scan-check-mode').style.display = 'block';
+      updateCheckDisplay(); // スキャンモードでもチェック状況表示
     }
   });
 });
@@ -761,7 +781,7 @@ function createItemElement(item, isQuick = false) {
     item.checked = checkbox.checked;
     await updateItem(item);
     updateStats();
-    if (currentDay) renderChecklist(currentDay);
+    updateCheckDisplay();
     if (!isQuick) renderItems();
     if (isQuick) renderTodayChecklist();
     
@@ -807,7 +827,7 @@ function createItemElement(item, isQuick = false) {
         items = items.filter(i => i.id !== item.id);
         renderItems();
         updateStats();
-        if (currentDay) renderChecklist(currentDay);
+        updateCheckDisplay();
         showStatus('🗑 削除しました', 'success');
       }
     });
@@ -841,6 +861,91 @@ function showStatus(message, type = 'info') {
     statusEl.textContent = '';
     statusEl.className = statusEl.className.replace(/status-\w+/g, '');
   }, 3000);
+}
+
+// チェック状況表示の統一化
+function updateCheckDisplay() {
+  if (!currentDay) return;
+  
+  // 手動モードとスキャンモード両方を更新
+  renderChecklist(currentDay);
+  renderScanChecklist(currentDay);
+}
+
+// 手動チェックリスト表示
+function renderChecklist(day) {
+  const list = document.getElementById('checklist');
+  const progress = document.getElementById('check-progress');
+  
+  const filtered = items.filter(i => i.days.includes(day));
+  
+  if (filtered.length === 0) {
+    list.innerHTML = '<li style="text-align:center; color:#999; padding:2em;">' + day + '曜日のアイテムはありません</li>';
+    progress.innerHTML = '';
+    return;
+  }
+  
+  const checkedCount = filtered.filter(i => i.checked).length;
+  const totalCount = filtered.length;
+  const percentage = Math.round((checkedCount / totalCount) * 100);
+  
+  progress.innerHTML = `
+    <div style="color: ${checkedCount === totalCount ? '#28a745' : '#007bff'};">
+      ${day}曜日: ${checkedCount}/${totalCount} 完了 (${percentage}%) ${checkedCount === totalCount ? '🎉' : ''}
+    </div>
+  `;
+  
+  list.innerHTML = '';
+  
+  filtered.sort((a, b) => {
+    const priorities = { '必須': 3, '重要': 2, '普通': 1 };
+    return priorities[b.priority] - priorities[a.priority];
+  });
+  
+  filtered.forEach(item => {
+    const li = createItemElement(item, true);
+    li.style.border = item.priority === '必須' ? '2px solid #dc3545' : 
+                     item.priority === '重要' ? '2px solid #ffc107' : '2px solid #e9ecef';
+    list.appendChild(li);
+  });
+}
+
+// スキャンモード用チェックリスト表示
+function renderScanChecklist(day) {
+  const list = document.getElementById('scan-checklist');
+  const progress = document.getElementById('scan-check-progress');
+  
+  const filtered = items.filter(i => i.days.includes(day));
+  
+  if (filtered.length === 0) {
+    list.innerHTML = '<li style="text-align:center; color:#999; padding:2em;">' + day + '曜日のアイテムはありません</li>';
+    progress.innerHTML = '';
+    return;
+  }
+  
+  const checkedCount = filtered.filter(i => i.checked).length;
+  const totalCount = filtered.length;
+  const percentage = Math.round((checkedCount / totalCount) * 100);
+  
+  progress.innerHTML = `
+    <div style="color: ${checkedCount === totalCount ? '#28a745' : '#007bff'};">
+      ${day}曜日: ${checkedCount}/${totalCount} 完了 (${percentage}%) ${checkedCount === totalCount ? '🎉' : ''}
+    </div>
+  `;
+  
+  list.innerHTML = '';
+  
+  filtered.sort((a, b) => {
+    const priorities = { '必須': 3, '重要': 2, '普通': 1 };
+    return priorities[b.priority] - priorities[a.priority];
+  });
+  
+  filtered.forEach(item => {
+    const li = createItemElement(item, true);
+    li.style.border = item.priority === '必須' ? '2px solid #dc3545' : 
+                     item.priority === '重要' ? '2px solid #ffc107' : '2px solid #e9ecef';
+    list.appendChild(li);
+  });
 }
 
 // クイック追加
@@ -935,17 +1040,16 @@ document.getElementById('add-detail').addEventListener('click', async () => {
     
     updateStats();
     renderItems();
-    if (currentDay && days.includes(currentDay)) renderChecklist(currentDay);
+    updateCheckDisplay();
     showStatus(`✅ 「${name}」を登録しました`, 'success');
   }
 });
 
-// バーコードスキャナー設定（登録用）
+// バーコードスキャナー設定
 const scanBtn = document.getElementById('scan-btn');
 const stopBtn = document.getElementById('stop-btn');
 const viewport = document.getElementById('viewport');
 
-// バーコードスキャナー設定（チェック用）
 const checkScanBtn = document.getElementById('check-scan-btn');
 const checkStopBtn = document.getElementById('check-stop-btn');
 const checkViewport = document.getElementById('check-viewport');
@@ -992,19 +1096,16 @@ function onCheckDetected(result) {
   const code = result.codeResult.code;
   if (!code) return;
   
-  // 現在の曜日のアイテムから検索
   const dayItems = items.filter(i => i.days.includes(currentDay));
   const foundItem = dayItems.find(i => i.code === code);
   
   if (foundItem) {
-    // アイテム発見 - 自動チェック
     if (!foundItem.checked) {
       foundItem.checked = true;
       updateItem(foundItem);
       updateStats();
-      renderChecklist(currentDay);
+      updateCheckDisplay();
       
-      // スキャン結果に追加
       scanResults.set(code, {
         item: foundItem,
         timestamp: new Date(),
@@ -1023,19 +1124,15 @@ function onCheckDetected(result) {
       if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100]);
       
     } else {
-      // 既にチェック済み
       checkStatus.textContent = `ℹ️ 既にチェック済み: ${foundItem.name}`;
       checkStatus.className = 'status-warning';
-      
       if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
     }
     
   } else {
-    // 未登録または今日不要なアイテム
     const anyItem = items.find(i => i.code === code);
     
     if (anyItem) {
-      // 登録済みだが今日は不要
       checkStatus.textContent = `⚠️ ${currentDay}曜日には不要: ${anyItem.name}`;
       checkStatus.className = 'status-warning';
       
@@ -1045,7 +1142,6 @@ function onCheckDetected(result) {
         <div style="font-size: 0.9em; margin-top: 0.3em;">${currentDay}曜日のリストにありません</div>
       `;
     } else {
-      // 完全に未登録
       checkStatus.textContent = `❌ 未登録アイテム: ${code}`;
       checkStatus.className = 'status-error';
       
@@ -1053,7 +1149,6 @@ function onCheckDetected(result) {
       document.getElementById('check-result').innerHTML = `
         <div>❌ <strong>未登録アイテム</strong></div>
         <div style="font-size: 0.9em; margin-top: 0.3em;">バーコード: ${code}</div>
-        <div style="font-size: 0.8em; margin-top: 0.3em;">登録タブから追加してください</div>
       `;
     }
     
@@ -1062,7 +1157,6 @@ function onCheckDetected(result) {
   
   renderScanResults();
   
-  // 3秒後にステータスリセット
   setTimeout(() => {
     checkStatus.textContent = '📷 バーコードを読み取って自動チェック';
     checkStatus.className = '';
@@ -1070,7 +1164,7 @@ function onCheckDetected(result) {
   }, 3000);
 }
 
-// 登録用スキャン開始・停止
+// スキャナー制御
 function startScanning() {
   if (isScanning) return;
   status.textContent = '🔧 カメラ初期化中...';
@@ -1100,7 +1194,6 @@ function stopScanning() {
   stopBtn.disabled = true;
 }
 
-// チェック用スキャン開始・停止
 function startCheckScanning() {
   if (isCheckScanning) return;
   checkStatus.textContent = '🔧 カメラ初期化中...';
@@ -1146,7 +1239,6 @@ function renderScanResults() {
   
   list.innerHTML = '';
   
-  // 時間順でソート（新しい順）
   const sortedResults = Array.from(scanResults.entries())
     .sort(([,a], [,b]) => new Date(b.timestamp) - new Date(a.timestamp));
   
@@ -1260,63 +1352,58 @@ document.getElementById('sort-toggle').addEventListener('click', () => {
 function selectCurrentDay() {
   const days = ['日', '月', '火', '水', '木', '金', '土'];
   const today = days[new Date().getDay()];
-  renderChecklist(today);
-}
-
-function renderChecklist(day) {
-  const list = document.getElementById('checklist');
-  const progress = document.getElementById('check-progress');
-  currentDay = day;
+  currentDay = today;
   
   document.querySelectorAll('.preset-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.day === day);
+    btn.classList.toggle('active', btn.dataset.day === today);
   });
   
-  const filtered = items.filter(i => i.days.includes(day));
-  
-  if (filtered.length === 0) {
-    list.innerHTML = '<li style="text-align:center; color:#999; padding:2em;">' + day + '曜日のアイテムはありません</li>';
-    progress.innerHTML = '';
-    return;
-  }
-  
-  const checkedCount = filtered.filter(i => i.checked).length;
-  const totalCount = filtered.length;
-  const percentage = Math.round((checkedCount / totalCount) * 100);
-  
-  progress.innerHTML = `
-    <div style="color: ${checkedCount === totalCount ? '#28a745' : '#007bff'};">
-      ${day}曜日: ${checkedCount}/${totalCount} 完了 (${percentage}%) ${checkedCount === totalCount ? '🎉' : ''}
-    </div>
-  `;
-  
-  list.innerHTML = '';
-  
-  filtered.sort((a, b) => {
-    const priorities = { '必須': 3, '重要': 2, '普通': 1 };
-    return priorities[b.priority] - priorities[a.priority];
-  });
-  
-  filtered.forEach(item => {
-    const li = createItemElement(item, true);
-    li.style.border = item.priority === '必須' ? '2px solid #dc3545' : 
-                     item.priority === '重要' ? '2px solid #ffc107' : '2px solid #e9ecef';
-    list.appendChild(li);
-  });
+  updateCheckDisplay();
 }
 
 // 曜日選択
 document.getElementById('preset-days').addEventListener('click', e => {
   if (e.target.classList.contains('preset-btn')) {
-    renderChecklist(e.target.dataset.day);
-    // スキャン結果もクリア
+    currentDay = e.target.dataset.day;
+    
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.day === currentDay);
+    });
+    
+    updateCheckDisplay();
     scanResults.clear();
     renderScanResults();
   }
 });
 
-// チェックリスト操作
+// 手動モード チェックリスト操作
 document.getElementById('check-all').addEventListener('click', async () => {
+  await performCheckAll();
+});
+
+document.getElementById('uncheck-all').addEventListener('click', async () => {
+  await performUncheckAll();
+});
+
+document.getElementById('reset-check').addEventListener('click', async () => {
+  await performResetCheck();
+});
+
+// スキャンモード チェックリスト操作
+document.getElementById('scan-check-all').addEventListener('click', async () => {
+  await performCheckAll();
+});
+
+document.getElementById('scan-uncheck-all').addEventListener('click', async () => {
+  await performUncheckAll();
+});
+
+document.getElementById('scan-reset-check').addEventListener('click', async () => {
+  await performResetCheck();
+});
+
+// 共通チェック操作関数
+async function performCheckAll() {
   const dayItems = items.filter(i => i.days.includes(currentDay));
   for (const item of dayItems) {
     if (!item.checked) {
@@ -1324,12 +1411,13 @@ document.getElementById('check-all').addEventListener('click', async () => {
       await updateItem(item);
     }
   }
-  renderChecklist(currentDay);
+  updateCheckDisplay();
   updateStats();
+  renderTodayChecklist();
   if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100]);
-});
+}
 
-document.getElementById('uncheck-all').addEventListener('click', async () => {
+async function performUncheckAll() {
   const dayItems = items.filter(i => i.days.includes(currentDay));
   for (const item of dayItems) {
     if (item.checked) {
@@ -1337,26 +1425,26 @@ document.getElementById('uncheck-all').addEventListener('click', async () => {
       await updateItem(item);
     }
   }
-  renderChecklist(currentDay);
+  updateCheckDisplay();
   updateStats();
-});
+  renderTodayChecklist();
+}
 
-document.getElementById('reset-check').addEventListener('click', async () => {
+async function performResetCheck() {
   if (confirm('全てのアイテムのチェック状態をリセットしますか？')) {
     for (const item of items) {
       item.checked = false;
       await updateItem(item);
     }
     renderItems();
-    if (currentDay) renderChecklist(currentDay);
+    updateCheckDisplay();
     renderTodayChecklist();
     updateStats();
-    // スキャン結果もクリア
     scanResults.clear();
     renderScanResults();
     showStatus('🔄 チェック状態をリセットしました', 'success');
   }
-});
+}
 
 // 編集モーダル
 function openEditModal(item) {
@@ -1402,7 +1490,7 @@ document.getElementById('save-edit').addEventListener('click', async () => {
   try {
     await updateItem(editingItem);
     renderItems();
-    if (currentDay) renderChecklist(currentDay);
+    updateCheckDisplay();
     renderTodayChecklist();
     updateStats();
     closeEditModal();
@@ -1422,6 +1510,7 @@ document.getElementById('clear-items').addEventListener('click', async () => {
       renderTodayChecklist();
       updateStats();
       document.getElementById('checklist').innerHTML = '';
+      document.getElementById('scan-checklist').innerHTML = '';
       scanResults.clear();
       renderScanResults();
       showStatus('🗑 全てのアイテムを削除しました', 'success');
@@ -1431,14 +1520,14 @@ document.getElementById('clear-items').addEventListener('click', async () => {
   }
 });
 
-// データ管理（エクスポート・インポート等）
+// データ管理
 document.getElementById('export-btn').addEventListener('click', async () => {
   try {
     const allItems = await getAllItems();
     const exportData = {
       items: allItems,
       exportedAt: new Date().toISOString(),
-      version: '2.0',
+      version: '2.1',
       app: 'wasuremono-pro'
     };
     const dataStr = JSON.stringify(exportData, null, 2);
