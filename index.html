@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>📚 忘れ物防止システム</title>
+<title>📚 忘れ物防止システム Pro</title>
 <meta name="theme-color" content="#007bff">
 
 <style>
@@ -14,7 +14,7 @@
   }
   .container { max-width: 480px; margin: 0 auto; }
   header {
-    background: #007bff; color: white; padding: 1em;
+    background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 1em;
     border-radius: 12px; text-align: center; margin-bottom: 1em;
     box-shadow: 0 4px 12px rgba(0,123,255,0.3);
   }
@@ -26,6 +26,7 @@
   .tab-btn {
     flex: 1; padding: 0.8em; border: none; background: white;
     cursor: pointer; font-weight: 500; transition: all 0.2s;
+    font-size: 13px;
   }
   .tab-btn.active { background: #007bff; color: white; }
   .tab-content { display: none; }
@@ -34,6 +35,8 @@
     background: white; border-radius: 12px; padding: 1.2em;
     margin-bottom: 1em; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
+  
+  /* スキャナー */
   #viewport {
     position: relative; width: 100%; height: 250px;
     border: 2px solid #007bff; border-radius: 12px;
@@ -45,6 +48,8 @@
     border: 3px dashed #00ff00; background: rgba(0,255,0,0.1);
     pointer-events: none; border-radius: 8px;
   }
+  
+  /* ボタン */
   .btn {
     padding: 0.8em 1.5em; border: none; border-radius: 8px;
     font-weight: 600; cursor: pointer; transition: all 0.2s;
@@ -55,7 +60,12 @@
   .btn-secondary { background: #6c757d; color: white; }
   .btn-success { background: #28a745; color: white; }
   .btn-danger { background: #dc3545; color: white; }
+  .btn-warning { background: #ffc107; color: #333; }
+  .btn-info { background: #17a2b8; color: white; }
   .btn:disabled { background: #ccc; cursor: not-allowed; }
+  .btn-sm { padding: 0.4em 0.8em; font-size: 12px; margin: 0.2em; }
+  
+  /* フォーム */
   .input-group { margin-bottom: 1em; }
   .input-group label { display: block; margin-bottom: 0.3em; font-weight: 500; }
   .input-group input, .input-group select, .input-group textarea {
@@ -65,22 +75,57 @@
   .input-group input:focus, .input-group select:focus {
     outline: none; border-color: #007bff;
   }
+  .input-row { display: flex; gap: 0.5em; }
+  .input-row .input-group { flex: 1; }
+  
+  /* アイテムリスト */
   .item-list { list-style: none; padding-left: 0; }
   .item {
     display: flex; align-items: center; padding: 0.8em;
     border: 2px solid #e9ecef; border-radius: 8px;
-    margin-bottom: 0.5em; transition: all 0.2s;
+    margin-bottom: 0.5em; transition: all 0.2s; position: relative;
   }
   .item.checked {
     background: linear-gradient(135deg, #d4edda, #c3e6cb);
     border-color: #28a745;
   }
-  .item-info { flex: 1; margin-left: 0.8em; }
+  .item-checkbox { margin-right: 0.8em; transform: scale(1.2); }
+  .item-info { flex: 1; }
   .item-name { font-weight: 600; color: #333; }
-  .item-code { font-size: 0.8em; color: #666; }
-  .item-day { font-size: 0.8em; color: #007bff; font-weight: 500; }
+  .item-details { font-size: 0.8em; color: #666; margin-top: 0.2em; }
+  .item-code { color: #007bff; }
+  .item-category { color: #6c757d; font-weight: 500; }
+  .item-days { color: #28a745; }
+  .item-actions { display: flex; gap: 0.3em; }
+  
+  /* カテゴリータブ */
+  .category-tabs {
+    display: flex; gap: 0.3em; margin-bottom: 1em; flex-wrap: wrap;
+  }
+  .category-btn {
+    padding: 0.5em 1em; border: 2px solid #007bff; background: white;
+    color: #007bff; border-radius: 20px; cursor: pointer;
+    font-weight: 500; transition: all 0.2s; font-size: 13px;
+  }
+  .category-btn.active { background: #007bff; color: white; }
+  
+  /* 検索バー */
+  .search-bar {
+    position: relative; margin-bottom: 1em;
+  }
+  .search-input {
+    width: 100%; padding: 0.7em 2.5em 0.7em 0.7em;
+    border: 2px solid #ddd; border-radius: 8px;
+  }
+  .search-clear {
+    position: absolute; right: 0.5em; top: 50%;
+    transform: translateY(-50%); background: none; border: none;
+    cursor: pointer; font-size: 16px; color: #666;
+  }
+  
+  /* プリセット */
   .preset-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
     gap: 0.5em; margin-bottom: 1em;
   }
   .preset-btn {
@@ -89,23 +134,49 @@
     font-weight: 500; transition: all 0.2s; text-align: center;
   }
   .preset-btn.active { background: #007bff; color: white; }
+  
+  /* ステータス */
   #status {
     padding: 0.8em; border-radius: 8px; margin-bottom: 1em;
     text-align: center; font-weight: 500;
     background: #e3f2fd; color: #1976d2; border: 2px solid #bbdefb;
   }
-  .export-import { display: flex; gap: 0.5em; margin-top: 1em; }
-  .file-input { display: none; }
-  .install-btn {
-    position: fixed; bottom: 20px; right: 20px; z-index: 1000;
-    background: #28a745; color: white; border: none; border-radius: 50px;
-    padding: 0.8em 1.2em; font-weight: 600; box-shadow: 0 4px 12px rgba(40,167,69,0.4);
-    display: none;
+  .status-success { background: #d4edda; color: #155724; border-color: #c3e6cb; }
+  .status-warning { background: #fff3cd; color: #856404; border-color: #ffeaa7; }
+  .status-error { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+  
+  /* 統計 */
+  .stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.8em; margin-bottom: 1em;
   }
+  .stat-card {
+    text-align: center; padding: 0.8em; background: white;
+    border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .stat-number { font-size: 1.5em; font-weight: 700; color: #007bff; }
+  .stat-label { font-size: 0.8em; color: #666; margin-top: 0.2em; }
+  
+  /* モーダル */
+  .modal {
+    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;
+  }
+  .modal.active { display: flex; }
+  .modal-content {
+    background: white; border-radius: 12px; padding: 1.5em;
+    max-width: 400px; width: 90%; max-height: 80vh; overflow-y: auto;
+  }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1em; }
+  .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; }
+  
+  /* レスポンシブ */
   @media (max-width: 480px) {
     body { padding: 0.3em; }
-    .tab-btn { padding: 0.6em; font-size: 13px; }
+    .tab-btn { padding: 0.6em 0.4em; font-size: 12px; }
     .btn { padding: 0.6em 1.2em; font-size: 13px; }
+    .input-row { flex-direction: column; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
   }
 </style>
 
@@ -113,18 +184,63 @@
 <body>
 <div class="container">
 <header>
-<h1>📚 忘れ物防止システム</h1>
-<p>教材をスキャンして、忘れ物をゼロに！</p>
+<h1>📚 忘れ物防止システム Pro</h1>
+<p>教材・持ち物をまとめて管理！</p>
 </header>
 
 <nav class="tab-nav">
-<button class="tab-btn active" data-tab="scanner">📱 スキャン</button>
-<button class="tab-btn" data-tab="items">📋 教材一覧</button>
+<button class="tab-btn active" data-tab="quick">⚡ クイック</button>
+<button class="tab-btn" data-tab="scanner">📱 スキャン</button>
+<button class="tab-btn" data-tab="items">📋 一覧</button>
 <button class="tab-btn" data-tab="check">✅ チェック</button>
 <button class="tab-btn" data-tab="settings">⚙️ 設定</button>
 </nav>
 
-<div id="scanner" class="tab-content active">
+<!-- クイックアクセスタブ -->
+<div id="quick" class="tab-content active">
+<div class="stats">
+<div class="stat-card">
+<div class="stat-number" id="total-items">0</div>
+<div class="stat-label">総アイテム</div>
+</div>
+<div class="stat-card">
+<div class="stat-number" id="checked-items">0</div>
+<div class="stat-label">チェック済</div>
+</div>
+<div class="stat-card">
+<div class="stat-number" id="today-items">0</div>
+<div class="stat-label">今日の予定</div>
+</div>
+</div>
+
+<div class="card">
+<h3>🚀 クイック追加</h3>
+<div class="input-row">
+<div class="input-group">
+<input type="text" id="quick-name" placeholder="アイテム名を入力" style="font-size: 16px;">
+</div>
+<button id="quick-add" class="btn btn-success" style="white-space: nowrap;">➕ 追加</button>
+</div>
+<div style="margin-top: 0.5em;">
+<select id="quick-category" style="margin-right: 0.5em; padding: 0.5em;">
+<option value="教材">📚 教材</option>
+<option value="文房具">✏️ 文房具</option>
+<option value="体育用品">⚽ 体育用品</option>
+<option value="弁当・水筒">🍱 弁当・水筒</option>
+<option value="その他">📦 その他</option>
+</select>
+<button id="quick-scan" class="btn btn-info btn-sm">📷 スキャン追加</button>
+</div>
+</div>
+
+<div class="card">
+<h3>📅 今日のチェックリスト</h3>
+<ul id="today-checklist" class="item-list"></ul>
+</div>
+</div>
+
+<!-- スキャンタブ -->
+<div id="scanner" class="tab-content">
 <div class="card">
 <div id="viewport"><div class="guide"></div></div>
 <div id="status">📷 準備完了 - スキャン開始ボタンを押してください</div>
@@ -135,14 +251,41 @@
 </div>
 
 <div class="card">
-<h3>📖 教材を手動追加</h3>
+<h3>📖 詳細登録</h3>
 <div class="input-group">
-<label>教材名</label>
-<input type="text" id="manual-name" placeholder="例: 数学の教科書">
+<label>アイテム名 *</label>
+<input type="text" id="detail-name" placeholder="例: 数学の教科書">
+</div>
+<div class="input-row">
+<div class="input-group">
+<label>カテゴリー</label>
+<select id="detail-category">
+<option value="教材">📚 教材</option>
+<option value="文房具">✏️ 文房具</option>
+<option value="体育用品">⚽ 体育用品</option>
+<option value="弁当・水筒">🍱 弁当・水筒</option>
+<option value="制服・服装">👔 制服・服装</option>
+<option value="楽器">🎵 楽器</option>
+<option value="部活用品">🏃 部活用品</option>
+<option value="その他">📦 その他</option>
+</select>
+</div>
+<div class="input-group">
+<label>重要度</label>
+<select id="detail-priority">
+<option value="普通">普通</option>
+<option value="重要">⭐ 重要</option>
+<option value="必須">‼️ 必須</option>
+</select>
+</div>
 </div>
 <div class="input-group">
 <label>バーコード (任意)</label>
-<input type="text" id="manual-code" placeholder="バーコードまたは独自ID">
+<input type="text" id="detail-code" placeholder="バーコードまたは独自ID">
+</div>
+<div class="input-group">
+<label>メモ (任意)</label>
+<textarea id="detail-memo" rows="2" placeholder="追加情報やメモ"></textarea>
 </div>
 <div class="input-group">
 <label>必要な曜日</label>
@@ -156,20 +299,38 @@
 <label style="display: flex; align-items: center;"><input type="checkbox" value="日" style="margin-right: 0.3em;"> 日</label>
 </div>
 </div>
-<button id="add-manual" class="btn btn-success">➕ 追加</button>
+<button id="add-detail" class="btn btn-success" style="width: 100%;">➕ 詳細登録</button>
 </div>
 </div>
 
+<!-- 一覧タブ -->
 <div id="items" class="tab-content">
 <div class="card">
-<h3>📚 登録済み教材</h3>
+<div class="search-bar">
+<input type="text" id="search-input" class="search-input" placeholder="🔍 アイテムを検索...">
+<button id="search-clear" class="search-clear">×</button>
+</div>
+<div class="category-tabs" id="category-tabs">
+<button class="category-btn active" data-category="all">全て</button>
+<button class="category-btn" data-category="教材">📚 教材</button>
+<button class="category-btn" data-category="文房具">✏️ 文房具</button>
+<button class="category-btn" data-category="体育用品">⚽ 体育</button>
+<button class="category-btn" data-category="弁当・水筒">🍱 弁当</button>
+<button class="category-btn" data-category="その他">📦 他</button>
+</div>
+</div>
+
+<div class="card">
+<h3 id="items-title">📚 全アイテム (0件)</h3>
 <ul id="items-list" class="item-list"></ul>
 <div style="text-align: center; margin-top: 1em;">
-<button id="clear-items" class="btn btn-danger">🗑 全削除</button>
+<button id="sort-toggle" class="btn btn-secondary btn-sm">📊 並び替え</button>
+<button id="clear-items" class="btn btn-danger btn-sm">🗑 全削除</button>
 </div>
 </div>
 </div>
 
+<!-- チェックタブ -->
 <div id="check" class="tab-content">
 <div class="card">
 <h3>✅ 曜日別チェックリスト</h3>
@@ -182,65 +343,148 @@
 <button class="preset-btn" data-day="土">土</button>
 <button class="preset-btn" data-day="日">日</button>
 </div>
+<div id="check-progress" style="text-align: center; margin: 1em 0; font-weight: 600;"></div>
 <ul id="checklist" class="item-list"></ul>
 <div style="text-align: center; margin-top: 1em;">
-<button id="reset-check" class="btn btn-secondary">🔄 チェックリセット</button>
+<button id="check-all" class="btn btn-success btn-sm">✅ 全選択</button>
+<button id="uncheck-all" class="btn btn-warning btn-sm">⭕ 全解除</button>
+<button id="reset-check" class="btn btn-secondary btn-sm">🔄 リセット</button>
 </div>
 </div>
 </div>
 
+<!-- 設定タブ -->
 <div id="settings" class="tab-content">
 <div class="card">
-<h3>⚙️ 設定とデータ管理</h3>
-<div class="export-import">
-<button id="export-btn" class="btn btn-primary">⬇ エクスポート</button>
-<label for="import-file" class="btn btn-secondary" style="margin-bottom:0;">⬆ インポート</label>
-<input type="file" id="import-file" class="file-input" accept="application/json">
+<h3>📊 統計情報</h3>
+<div class="stats" id="detailed-stats">
+<div class="stat-card">
+<div class="stat-number" id="stat-total">0</div>
+<div class="stat-label">総アイテム数</div>
 </div>
-<div id="status-msg" style="margin-top:1em; text-align:center; color:#28a745; font-weight:600;"></div>
+<div class="stat-card">
+<div class="stat-number" id="stat-categories">0</div>
+<div class="stat-label">カテゴリー数</div>
 </div>
-<div class="card">
-<h3>📱 PWAについて</h3>
-<p>このアプリはPWA（Progressive Web App）として動作します。</p>
-<ul style="margin-top:0.5em; padding-left:1.5em;">
-<li>オフラインでも動作</li>
-<li>ホーム画面に追加可能</li>
-<li>データはブラウザに保存</li>
-</ul>
-<button id="install-pwa" class="btn btn-success" style="margin-top:1em; display:none;">📱 ホーム画面に追加</button>
+<div class="stat-card">
+<div class="stat-number" id="stat-barcodes">0</div>
+<div class="stat-label">バーコード付き</div>
+</div>
+<div class="stat-card">
+<div class="stat-number" id="stat-completion">0%</div>
+<div class="stat-label">完了率</div>
 </div>
 </div>
 </div>
 
-<button id="install-btn-float" class="install-btn">📱 インストール</button>
+<div class="card">
+<h3>⚙️ データ管理</h3>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5em; margin-bottom: 1em;">
+<button id="export-btn" class="btn btn-primary">⬇ エクスポート</button>
+<label for="import-file" class="btn btn-secondary" style="margin:0; text-align:center; display:flex; align-items:center; justify-content:center;">⬆ インポート</label>
+</div>
+<input type="file" id="import-file" style="display:none;" accept="application/json">
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5em;">
+<button id="backup-btn" class="btn btn-info">💾 バックアップ</button>
+<button id="restore-btn" class="btn btn-warning">🔄 復元</button>
+</div>
+<div id="status-msg" style="margin-top:1em; text-align:center; font-weight:600;"></div>
+</div>
+
+<div class="card">
+<h3>📱 PWA情報</h3>
+<p>このアプリはPWA対応で以下の機能があります：</p>
+<ul style="margin:0.5em 0 1em 1.5em;">
+<li>オフライン動作</li>
+<li>ホーム画面追加</li>
+<li>データ永続保存</li>
+<li>マルチデバイス対応</li>
+</ul>
+<button id="install-pwa" class="btn btn-success" style="display:none;">📱 ホーム画面に追加</button>
+</div>
+</div>
+
+<!-- 編集モーダル -->
+<div id="edit-modal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h3>✏️ アイテム編集</h3>
+<button class="modal-close" onclick="closeEditModal()">×</button>
+</div>
+<div class="input-group">
+<label>アイテム名</label>
+<input type="text" id="edit-name">
+</div>
+<div class="input-row">
+<div class="input-group">
+<label>カテゴリー</label>
+<select id="edit-category">
+<option value="教材">📚 教材</option>
+<option value="文房具">✏️ 文房具</option>
+<option value="体育用品">⚽ 体育用品</option>
+<option value="弁当・水筒">🍱 弁当・水筒</option>
+<option value="制服・服装">👔 制服・服装</option>
+<option value="楽器">🎵 楽器</option>
+<option value="部活用品">🏃 部活用品</option>
+<option value="その他">📦 その他</option>
+</select>
+</div>
+<div class="input-group">
+<label>重要度</label>
+<select id="edit-priority">
+<option value="普通">普通</option>
+<option value="重要">⭐ 重要</option>
+<option value="必須">‼️ 必須</option>
+</select>
+</div>
+</div>
+<div class="input-group">
+<label>バーコード</label>
+<input type="text" id="edit-code">
+</div>
+<div class="input-group">
+<label>メモ</label>
+<textarea id="edit-memo" rows="2"></textarea>
+</div>
+<div class="input-group">
+<label>必要な曜日</label>
+<div id="edit-days" style="display: flex; flex-wrap: wrap; gap: 0.3em;">
+<label style="display: flex; align-items: center; margin-right: 1em;"><input type="checkbox" value="月" style="margin-right: 0.3em;"> 月</label>
+<label style="display: flex; align-items: center; margin-right: 1em;"><input type="checkbox" value="火" style="margin-right: 0.3em;"> 火</label>
+<label style="display: flex; align-items: center; margin-right: 1em;"><input type="checkbox" value="水" style="margin-right: 0.3em;"> 水</label>
+<label style="display: flex; align-items: center; margin-right: 1em;"><input type="checkbox" value="木" style="margin-right: 0.3em;"> 木</label>
+<label style="display: flex; align-items: center; margin-right: 1em;"><input type="checkbox" value="金" style="margin-right: 0.3em;"> 金</label>
+<label style="display: flex; align-items: center; margin-right: 1em;"><input type="checkbox" value="土" style="margin-right: 0.3em;"> 土</label>
+<label style="display: flex; align-items: center;"><input type="checkbox" value="日" style="margin-right: 0.3em;"> 日</label>
+</div>
+</div>
+<div style="display: flex; gap: 0.5em; margin-top: 1em;">
+<button id="save-edit" class="btn btn-success" style="flex: 1;">💾 保存</button>
+<button onclick="closeEditModal()" class="btn btn-secondary">❌ キャンセル</button>
+</div>
+</div>
+</div>
+
+</div>
 
 <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
 <script>
-// PWA manifest data (inline)
+// PWA設定（前回と同じ）
 const manifestData = {
-  "name": "忘れ物防止システム",
-  "short_name": "忘れ物チェック",
-  "description": "教材をバーコードで管理し、忘れ物を防ぐPWAシステム",
+  "name": "忘れ物防止システム Pro",
+  "short_name": "忘れ物Pro",
+  "description": "教材・持ち物を統合管理する忘れ物防止システム",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#007bff",
   "orientation": "portrait",
   "icons": [
-    {
-      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
-      "sizes": "512x512", 
-      "type": "image/png"
-    }
+    { "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==", "sizes": "192x192", "type": "image/png" },
+    { "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==", "sizes": "512x512", "type": "image/png" }
   ]
 };
 
-// Create and set manifest
 const manifestBlob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
 const manifestURL = URL.createObjectURL(manifestBlob);
 const link = document.createElement('link');
@@ -248,50 +492,23 @@ link.rel = 'manifest';
 link.href = manifestURL;
 document.head.appendChild(link);
 
-// Register service worker (inline)
+// Service Worker登録
 const swCode = `
-const CACHE_NAME = 'wasuremono-v1';
-const urlsToCache = [
-  './',
-  'https://unpkg.com/quagga@0.12.1/dist/quagga.min.js'
-];
-
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(urlsToCache).catch(() => {
-        // Offline install - cache current page only
-        return cache.add('./');
-      });
-    })
-  );
-});
-
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request).catch(() => {
-        // Return cached version if network fails
-        return caches.match('./');
-      });
-    })
-  );
-});
+const CACHE_NAME = 'wasuremono-pro-v1';
+const urlsToCache = ['./', 'https://unpkg.com/quagga@0.12.1/dist/quagga.min.js'];
+self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(urlsToCache).catch(() => c.add('./')))));
+self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('./')))));
 `;
 
 if ('serviceWorker' in navigator) {
   const swBlob = new Blob([swCode], {type: 'application/javascript'});
   const swURL = URL.createObjectURL(swBlob);
-  navigator.serviceWorker.register(swURL).then(() => {
-    console.log('Service Worker registered');
-  }).catch(err => {
-    console.error('SW registration failed:', err);
-  });
+  navigator.serviceWorker.register(swURL).then(() => console.log('SW registered')).catch(console.error);
 }
 
-// IndexedDB wrapper
-const DB_NAME = 'wasuremonoDB';
-const DB_VERSION = 1;
+// IndexedDB設定
+const DB_NAME = 'wasuremonoPro';
+const DB_VERSION = 2;
 const STORE_NAME = 'items';
 let db;
 
@@ -299,19 +516,19 @@ function openDB() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     request.onerror = () => reject(request.error);
-    request.onsuccess = () => {
-      db = request.result;
-      resolve(db);
-    };
+    request.onsuccess = () => { db = request.result; resolve(db); };
     request.onupgradeneeded = e => {
       db = e.target.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+        const store = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+        store.createIndex('category', 'category', { unique: false });
+        store.createIndex('name', 'name', { unique: false });
       }
     };
   });
 }
 
+// CRUD操作
 function addItem(item) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
@@ -332,16 +549,6 @@ function getAllItems() {
   });
 }
 
-function clearItems() {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    const store = tx.objectStore(STORE_NAME);
-    const request = store.clear();
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
-}
-
 function updateItem(item) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite');
@@ -349,81 +556,6 @@ function updateItem(item) {
     const request = store.put(item);
     request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
-  });
-}
-
-// UI Elements
-const tabs = document.querySelectorAll('.tab-btn');
-const tabContents = document.querySelectorAll('.tab-content');
-const itemsList = document.getElementById('items-list');
-const checklist = document.getElementById('checklist');
-const presetDays = document.getElementById('preset-days');
-const statusMsg = document.getElementById('status-msg');
-const status = document.getElementById('status');
-
-// State
-let items = [];
-let currentDay = null;
-
-// Tab switching
-tabs.forEach(tab => {
-  tab.addEventListener('click', () => {
-    tabs.forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    const target = tab.dataset.tab;
-    tabContents.forEach(tc => {
-      tc.classList.toggle('active', tc.id === target);
-    });
-  });
-});
-
-// Render items list
-function renderItems() {
-  itemsList.innerHTML = '';
-  if (items.length === 0) {
-    itemsList.innerHTML = '<li style="text-align:center; color:#999; padding:2em;">登録された教材がありません</li>';
-    return;
-  }
-  items.forEach(item => {
-    const li = document.createElement('li');
-    li.className = 'item' + (item.checked ? ' checked' : '');
-    li.dataset.id = item.id;
-
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = !!item.checked;
-    checkbox.addEventListener('change', async () => {
-      item.checked = checkbox.checked;
-      await updateItem(item);
-      renderItems();
-      if (currentDay) renderChecklist(currentDay);
-    });
-
-    const info = document.createElement('div');
-    info.className = 'item-info';
-    info.innerHTML = `
-      <div class="item-name">${item.name}</div>
-      <div class="item-code">${item.code || '(バーコードなし)'}</div>
-      <div class="item-day">${item.days.join(', ')}</div>
-    `;
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = '🗑';
-    deleteBtn.className = 'btn btn-danger';
-    deleteBtn.style.cssText = 'padding:0.3em 0.6em; margin:0; font-size:12px;';
-    deleteBtn.addEventListener('click', async () => {
-      if (confirm(`「${item.name}」を削除しますか？`)) {
-        await deleteItem(item.id);
-        items = items.filter(i => i.id !== item.id);
-        renderItems();
-        if (currentDay) renderChecklist(currentDay);
-      }
-    });
-
-    li.appendChild(checkbox);
-    li.appendChild(info);
-    li.appendChild(deleteBtn);
-    itemsList.appendChild(li);
   });
 }
 
@@ -437,82 +569,269 @@ function deleteItem(id) {
   });
 }
 
-// Render checklist for a day
-function renderChecklist(day) {
-  checklist.innerHTML = '';
-  currentDay = day;
-  
-  // Update preset button states
-  presetDays.querySelectorAll('.preset-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.day === day);
-  });
-  
-  const filtered = items.filter(i => i.days.includes(day));
-  if (filtered.length === 0) {
-    checklist.innerHTML = '<li style="text-align:center; color:#999; padding:2em;">その日の教材は登録されていません</li>';
-    return;
-  }
-  
-  const checkedCount = filtered.filter(i => i.checked).length;
-  const totalCount = filtered.length;
-  
-  // Progress indicator
-  const progressDiv = document.createElement('div');
-  progressDiv.style.cssText = 'text-align:center; margin-bottom:1em; font-weight:600;';
-  progressDiv.innerHTML = `
-    <div style="color: ${checkedCount === totalCount ? '#28a745' : '#007bff'};">
-      ${checkedCount}/${totalCount} 完了 ${checkedCount === totalCount ? '🎉' : ''}
-    </div>
-  `;
-  checklist.appendChild(progressDiv);
-  
-  filtered.forEach(item => {
-    const li = document.createElement('li');
-    li.className = 'item' + (item.checked ? ' checked' : '');
-    li.dataset.id = item.id;
-
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = !!item.checked;
-    checkbox.addEventListener('change', async () => {
-      item.checked = checkbox.checked;
-      await updateItem(item);
-      renderChecklist(day);
-      renderItems();
-      
-      // Celebration effect
-      if (checkbox.checked && navigator.vibrate) {
-        navigator.vibrate([100, 50, 100]);
-      }
-    });
-
-    const info = document.createElement('div');
-    info.className = 'item-info';
-    info.innerHTML = `
-      <div class="item-name">${item.name}</div>
-      <div class="item-code">${item.code || '(バーコードなし)'}</div>
-    `;
-
-    li.appendChild(checkbox);
-    li.appendChild(info);
-    checklist.appendChild(li);
+function clearItems() {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    const store = tx.objectStore(STORE_NAME);
+    const request = store.clear();
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
   });
 }
 
-// Add new item
-async function addNewItem(name, code, days) {
-  if (!name.trim()) return;
+// グローバル変数
+let items = [];
+let currentDay = null;
+let currentCategory = 'all';
+let sortBy = 'name'; // name, category, priority, created
+let isScanning = false;
+let editingItem = null;
+
+// UI要素
+const tabs = document.querySelectorAll('.tab-btn');
+const tabContents = document.querySelectorAll('.tab-content');
+const status = document.getElementById('status');
+
+// タブ切り替え[2]
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const target = tab.dataset.tab;
+    tabContents.forEach(tc => {
+      tc.classList.toggle('active', tc.id === target);
+    });
+    
+    // タブ切り替え時の処理
+    if (target === 'quick') {
+      updateStats();
+      renderTodayChecklist();
+    } else if (target === 'items') {
+      renderItems();
+    } else if (target === 'check') {
+      if (!currentDay) selectCurrentDay();
+    } else if (target === 'settings') {
+      updateDetailedStats();
+    }
+  });
+});
+
+// 統計更新
+function updateStats() {
+  const total = items.length;
+  const checked = items.filter(i => i.checked).length;
+  const today = getTodayItems().length;
   
-  // Check for duplicate codes
-  if (code && items.some(i => i.code === code)) {
-    alert('同じバーコードの教材が既に登録されています');
+  document.getElementById('total-items').textContent = total;
+  document.getElementById('checked-items').textContent = checked;
+  document.getElementById('today-items').textContent = today;
+}
+
+function updateDetailedStats() {
+  const total = items.length;
+  const categories = [...new Set(items.map(i => i.category))].length;
+  const barcodes = items.filter(i => i.code).length;
+  const checked = items.filter(i => i.checked).length;
+  const completion = total > 0 ? Math.round((checked / total) * 100) : 0;
+  
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-categories').textContent = categories;
+  document.getElementById('stat-barcodes').textContent = barcodes;
+  document.getElementById('stat-completion').textContent = completion + '%';
+}
+
+// 今日のアイテム取得
+function getTodayItems() {
+  const days = ['日', '月', '火', '水', '木', '金', '土'];
+  const today = days[new Date().getDay()];
+  return items.filter(i => i.days.includes(today));
+}
+
+// 今日のチェックリスト表示
+function renderTodayChecklist() {
+  const todayItems = getTodayItems();
+  const list = document.getElementById('today-checklist');
+  
+  if (todayItems.length === 0) {
+    list.innerHTML = '<li style="text-align:center; color:#999; padding:2em;">今日の予定はありません</li>';
     return;
   }
   
-  const item = { 
-    name: name.trim(), 
-    code: code.trim() || null, 
-    days: days || [], 
+  list.innerHTML = '';
+  todayItems.forEach(item => {
+    const li = createItemElement(item, true);
+    list.appendChild(li);
+  });
+}
+
+// アイテム要素作成
+function createItemElement(item, isQuick = false) {
+  const li = document.createElement('li');
+  li.className = 'item' + (item.checked ? ' checked' : '');
+  li.dataset.id = item.id;
+
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.className = 'item-checkbox';
+  checkbox.checked = !!item.checked;
+  checkbox.addEventListener('change', async () => {
+    item.checked = checkbox.checked;
+    await updateItem(item);
+    updateStats();
+    if (currentDay) renderChecklist(currentDay);
+    if (!isQuick) renderItems();
+    if (isQuick) renderTodayChecklist();
+    
+    // フィードバック[1]
+    if (checkbox.checked && navigator.vibrate) {
+      navigator.vibrate([100, 50, 100]);
+    }
+  });
+
+  const info = document.createElement('div');
+  info.className = 'item-info';
+  
+  let priorityIcon = '';
+  if (item.priority === '重要') priorityIcon = '⭐ ';
+  else if (item.priority === '必須') priorityIcon = '‼️ ';
+  
+  let categoryIcon = getCategoryIcon(item.category);
+  
+  info.innerHTML = `
+    <div class="item-name">${priorityIcon}${item.name}</div>
+    <div class="item-details">
+      <span class="item-category">${categoryIcon} ${item.category}</span>
+      ${item.code ? `<span class="item-code"> • ${item.code}</span>` : ''}
+      ${item.days.length > 0 ? `<span class="item-days"> • ${item.days.join(', ')}</span>` : ''}
+      ${item.memo ? `<br><small style="color:#666;">${item.memo}</small>` : ''}
+    </div>
+  `;
+
+  if (!isQuick) {
+    const actions = document.createElement('div');
+    actions.className = 'item-actions';
+    
+    const editBtn = document.createElement('button');
+    editBtn.textContent = '✏️';
+    editBtn.className = 'btn btn-info btn-sm';
+    editBtn.addEventListener('click', () => openEditModal(item));
+    
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = '🗑';
+    deleteBtn.className = 'btn btn-danger btn-sm';
+    deleteBtn.addEventListener('click', async () => {
+      if (confirm(`「${item.name}」を削除しますか？`)) {
+        await deleteItem(item.id);
+        items = items.filter(i => i.id !== item.id);
+        renderItems();
+        updateStats();
+        if (currentDay) renderChecklist(currentDay);
+        showStatus('🗑 削除しました', 'success');
+      }
+    });
+    
+    actions.appendChild(editBtn);
+    actions.appendChild(deleteBtn);
+    li.appendChild(actions);
+  }
+
+  li.appendChild(checkbox);
+  li.appendChild(info);
+  
+  return li;
+}
+
+// カテゴリーアイコン取得
+function getCategoryIcon(category) {
+  const icons = {
+    '教材': '📚',
+    '文房具': '✏️',
+    '体育用品': '⚽',
+    '弁当・水筒': '🍱',
+    '制服・服装': '👔',
+    '楽器': '🎵',
+    '部活用品': '🏃',
+    'その他': '📦'
+  };
+  return icons[category] || '📦';
+}
+
+// ステータス表示
+function showStatus(message, type = 'info') {
+  const statusEl = document.getElementById('status-msg') || status;
+  statusEl.textContent = message;
+  statusEl.className = statusEl.className.replace(/status-\w+/g, '') + ` status-${type}`;
+  setTimeout(() => {
+    statusEl.textContent = '';
+    statusEl.className = statusEl.className.replace(/status-\w+/g, '');
+  }, 3000);
+}
+
+// クイック追加
+document.getElementById('quick-add').addEventListener('click', async () => {
+  const name = document.getElementById('quick-name').value.trim();
+  const category = document.getElementById('quick-category').value;
+  
+  if (!name) {
+    document.getElementById('quick-name').focus();
+    return;
+  }
+  
+  const days = ['日', '月', '火', '水', '木', '金', '土'];
+  const today = days[new Date().getDay()];
+  
+  const success = await addNewItem({
+    name,
+    category,
+    priority: '普通',
+    days: [today],
+    code: '',
+    memo: ''
+  });
+  
+  if (success) {
+    document.getElementById('quick-name').value = '';
+    renderTodayChecklist();
+    updateStats();
+    showStatus(`✅ 「${name}」を追加しました`, 'success');
+  }
+});
+
+// Enter キー対応
+document.getElementById('quick-name').addEventListener('keypress', e => {
+  if (e.key === 'Enter') {
+    document.getElementById('quick-add').click();
+  }
+});
+
+// クイックスキャン
+document.getElementById('quick-scan').addEventListener('click', () => {
+  // スキャンタブに切り替え
+  document.querySelector('[data-tab="scanner"]').click();
+  setTimeout(() => {
+    if (!isScanning) {
+      document.getElementById('scan-btn').click();
+    }
+  }, 500);
+});
+
+// アイテム追加（共通関数）
+async function addNewItem(itemData) {
+  if (!itemData.name.trim()) return false;
+  
+  // 重複チェック（バーコードまたは名前）
+  if (itemData.code && items.some(i => i.code === itemData.code)) {
+    showStatus('同じバーコードのアイテムが既に登録されています', 'warning');
+    return false;
+  }
+  
+  const item = {
+    name: itemData.name.trim(),
+    category: itemData.category || 'その他',
+    priority: itemData.priority || '普通',
+    code: itemData.code ? itemData.code.trim() : '',
+    memo: itemData.memo ? itemData.memo.trim() : '',
+    days: itemData.days || [],
     checked: false,
     createdAt: new Date().toISOString()
   };
@@ -520,60 +839,48 @@ async function addNewItem(name, code, days) {
   try {
     item.id = await addItem(item);
     items.push(item);
-    renderItems();
-    if (currentDay && days.includes(currentDay)) renderChecklist(currentDay);
     return true;
   } catch (err) {
-    alert('追加に失敗しました: ' + err.message);
+    showStatus('追加に失敗しました: ' + err.message, 'error');
     return false;
   }
 }
 
-// Clear all items
-async function clearAllItems() {
-  try {
-    await clearItems();
-    items = [];
-    renderItems();
-    checklist.innerHTML = '';
-    currentDay = null;
-  } catch (err) {
-    alert('削除に失敗しました: ' + err.message);
+// 詳細登録
+document.getElementById('add-detail').addEventListener('click', async () => {
+  const name = document.getElementById('detail-name').value;
+  const category = document.getElementById('detail-category').value;
+  const priority = document.getElementById('detail-priority').value;
+  const code = document.getElementById('detail-code').value;
+  const memo = document.getElementById('detail-memo').value;
+  const dayCheckboxes = document.querySelectorAll('#scanner input[type=checkbox]:checked');
+  const days = Array.from(dayCheckboxes).map(cb => cb.value);
+  
+  if (!name.trim()) {
+    document.getElementById('detail-name').focus();
+    showStatus('アイテム名を入力してください', 'warning');
+    return;
   }
-}
-
-// Load all items from DB
-async function loadItems() {
-  try {
-    items = await getAllItems();
+  
+  const success = await addNewItem({ name, category, priority, code, memo, days });
+  if (success) {
+    // フォームクリア
+    document.getElementById('detail-name').value = '';
+    document.getElementById('detail-code').value = '';
+    document.getElementById('detail-memo').value = '';
+    dayCheckboxes.forEach(cb => cb.checked = false);
+    
+    updateStats();
     renderItems();
-  } catch (err) {
-    console.error('Load items failed:', err);
+    if (currentDay && days.includes(currentDay)) renderChecklist(currentDay);
+    showStatus(`✅ 「${name}」を登録しました`, 'success');
   }
-}
-
-// Preset day buttons
-presetDays.querySelectorAll('.preset-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    renderChecklist(btn.dataset.day);
-  });
 });
 
-// Auto-select current day
-function selectCurrentDay() {
-  const days = ['日', '月', '火', '水', '木', '金', '土'];
-  const today = days[new Date().getDay()];
-  const todayFiltered = items.filter(i => i.days.includes(today));
-  if (todayFiltered.length > 0) {
-    renderChecklist(today);
-  }
-}
-
-// Barcode scanning setup
+// バーコードスキャナー設定[1][3]
 const scanBtn = document.getElementById('scan-btn');
 const stopBtn = document.getElementById('stop-btn');
 const viewport = document.getElementById('viewport');
-let isScanning = false;
 
 const quaggaConfig = {
   inputStream: {
@@ -591,7 +898,7 @@ const quaggaConfig = {
   frequency: 8,
   numOfWorkers: 2,
   decoder: {
-    readers: ['ean_reader', 'ean_8_reader'],
+    readers: ['ean_reader', 'ean_8_reader', 'code_128_reader'],
     multiple: false
   },
   locate: true,
@@ -601,9 +908,9 @@ const quaggaConfig = {
 
 function onDetected(result) {
   const code = result.codeResult.code;
-  if (!code || !/^\d{13}$/.test(code)) return;
+  if (!code) return;
   
-  // Check if code already exists
+  // 既存チェック
   const existing = items.find(i => i.code === code);
   if (existing) {
     status.textContent = `✅ 既に登録済み: ${existing.name} (${code})`;
@@ -611,9 +918,9 @@ function onDetected(result) {
     return;
   }
   
-  status.textContent = `📖 検出: ${code} - 教材名を入力して追加してください`;
-  document.getElementById('manual-code').value = code;
-  document.getElementById('manual-name').focus();
+  status.textContent = `📖 検出: ${code} - アイテム名を入力してください`;
+  document.getElementById('detail-code').value = code;
+  document.getElementById('detail-name').focus();
   
   if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100]);
 }
@@ -651,90 +958,287 @@ function stopScanning() {
 scanBtn.addEventListener('click', startScanning);
 stopBtn.addEventListener('click', stopScanning);
 
-// Add manual item
-const addManualBtn = document.getElementById('add-manual');
-addManualBtn.addEventListener('click', async () => {
-  const name = document.getElementById('manual-name').value;
-  const code = document.getElementById('manual-code').value;
-  const dayCheckboxes = document.querySelectorAll('#scanner input[type=checkbox]:checked');
-  const days = Array.from(dayCheckboxes).map(cb => cb.value);
+// アイテム一覧表示
+function renderItems() {
+  const list = document.getElementById('items-list');
+  const title = document.getElementById('items-title');
   
-  if (!name.trim()) {
-    alert('教材名を入力してください');
-    document.getElementById('manual-name').focus();
+  let filtered = items;
+  
+  // カテゴリーフィルター
+  if (currentCategory !== 'all') {
+    filtered = filtered.filter(i => i.category === currentCategory);
+  }
+  
+  // 検索フィルター
+  const searchTerm = document.getElementById('search-input').value.toLowerCase();
+  if (searchTerm) {
+    filtered = filtered.filter(i => 
+      i.name.toLowerCase().includes(searchTerm) ||
+      i.category.toLowerCase().includes(searchTerm) ||
+      (i.code && i.code.toLowerCase().includes(searchTerm)) ||
+      (i.memo && i.memo.toLowerCase().includes(searchTerm))
+    );
+  }
+  
+  // ソート
+  filtered.sort((a, b) => {
+    if (sortBy === 'name') return a.name.localeCompare(b.name);
+    if (sortBy === 'category') return a.category.localeCompare(b.category);
+    if (sortBy === 'priority') {
+      const priorities = { '必須': 3, '重要': 2, '普通': 1 };
+      return priorities[b.priority] - priorities[a.priority];
+    }
+    if (sortBy === 'created') return new Date(b.createdAt) - new Date(a.createdAt);
+    return 0;
+  });
+  
+  title.textContent = `${getCategoryIcon(currentCategory)} ${currentCategory === 'all' ? '全アイテム' : currentCategory} (${filtered.length}件)`;
+  
+  if (filtered.length === 0) {
+    list.innerHTML = '<li style="text-align:center; color:#999; padding:2em;">該当するアイテムがありません</li>';
     return;
   }
   
-  if (days.length === 0) {
-    alert('必要な曜日を選択してください');
+  list.innerHTML = '';
+  filtered.forEach(item => {
+    const li = createItemElement(item, false);
+    list.appendChild(li);
+  });
+}
+
+// カテゴリータブ
+document.getElementById('category-tabs').addEventListener('click', e => {
+  if (e.target.classList.contains('category-btn')) {
+    document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+    e.target.classList.add('active');
+    currentCategory = e.target.dataset.category;
+    renderItems();
+  }
+});
+
+// 検索機能
+const searchInput = document.getElementById('search-input');
+const searchClear = document.getElementById('search-clear');
+
+searchInput.addEventListener('input', () => {
+  renderItems();
+  searchClear.style.display = searchInput.value ? 'block' : 'none';
+});
+
+searchClear.addEventListener('click', () => {
+  searchInput.value = '';
+  searchClear.style.display = 'none';
+  renderItems();
+});
+
+// ソート切り替え
+document.getElementById('sort-toggle').addEventListener('click', () => {
+  const sorts = ['name', 'category', 'priority', 'created'];
+  const currentIndex = sorts.indexOf(sortBy);
+  sortBy = sorts[(currentIndex + 1) % sorts.length];
+  
+  const labels = { name: '名前順', category: 'カテゴリー順', priority: '重要度順', created: '追加日順' };
+  document.getElementById('sort-toggle').textContent = `📊 ${labels[sortBy]}`;
+  
+  renderItems();
+});
+
+// チェックリスト機能
+function selectCurrentDay() {
+  const days = ['日', '月', '火', '水', '木', '金', '土'];
+  const today = days[new Date().getDay()];
+  renderChecklist(today);
+}
+
+function renderChecklist(day) {
+  const list = document.getElementById('checklist');
+  const progress = document.getElementById('check-progress');
+  currentDay = day;
+  
+  // プリセットボタン状態更新
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.day === day);
+  });
+  
+  const filtered = items.filter(i => i.days.includes(day));
+  
+  if (filtered.length === 0) {
+    list.innerHTML = '<li style="text-align:center; color:#999; padding:2em;">' + day + '曜日のアイテムはありません</li>';
+    progress.innerHTML = '';
     return;
   }
   
-  const success = await addNewItem(name, code, days);
-  if (success) {
-    document.getElementById('manual-name').value = '';
-    document.getElementById('manual-code').value = '';
-    dayCheckboxes.forEach(cb => cb.checked = false);
-    status.textContent = `✅ 「${name}」を追加しました`;
+  const checkedCount = filtered.filter(i => i.checked).length;
+  const totalCount = filtered.length;
+  const percentage = Math.round((checkedCount / totalCount) * 100);
+  
+  progress.innerHTML = `
+    <div style="color: ${checkedCount === totalCount ? '#28a745' : '#007bff'};">
+      ${day}曜日: ${checkedCount}/${totalCount} 完了 (${percentage}%) ${checkedCount === totalCount ? '🎉' : ''}
+    </div>
+  `;
+  
+  list.innerHTML = '';
+  
+  // 重要度でソート
+  filtered.sort((a, b) => {
+    const priorities = { '必須': 3, '重要': 2, '普通': 1 };
+    return priorities[b.priority] - priorities[a.priority];
+  });
+  
+  filtered.forEach(item => {
+    const li = createItemElement(item, true);
+    li.style.border = item.priority === '必須' ? '2px solid #dc3545' : 
+                     item.priority === '重要' ? '2px solid #ffc107' : '2px solid #e9ecef';
+    list.appendChild(li);
+  });
+}
+
+// 曜日選択
+document.getElementById('preset-days').addEventListener('click', e => {
+  if (e.target.classList.contains('preset-btn')) {
+    renderChecklist(e.target.dataset.day);
   }
 });
 
-// Enter key support for manual input
-document.getElementById('manual-name').addEventListener('keypress', e => {
-  if (e.key === 'Enter') addManualBtn.click();
-});
-
-// Clear items
-const clearItemsBtn = document.getElementById('clear-items');
-clearItemsBtn.addEventListener('click', async () => {
-  if (confirm('本当に全ての教材を削除しますか？\nこの操作は取り消せません。')) {
-    await clearAllItems();
-    status.textContent = '🗑 全ての教材を削除しました';
+// チェックリスト操作
+document.getElementById('check-all').addEventListener('click', async () => {
+  const dayItems = items.filter(i => i.days.includes(currentDay));
+  for (const item of dayItems) {
+    if (!item.checked) {
+      item.checked = true;
+      await updateItem(item);
+    }
   }
+  renderChecklist(currentDay);
+  updateStats();
+  if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100]);
 });
 
-// Reset check status
-const resetCheckBtn = document.getElementById('reset-check');
-resetCheckBtn.addEventListener('click', async () => {
-  if (confirm('全ての教材のチェック状態をリセットしますか？')) {
+document.getElementById('uncheck-all').addEventListener('click', async () => {
+  const dayItems = items.filter(i => i.days.includes(currentDay));
+  for (const item of dayItems) {
+    if (item.checked) {
+      item.checked = false;
+      await updateItem(item);
+    }
+  }
+  renderChecklist(currentDay);
+  updateStats();
+});
+
+document.getElementById('reset-check').addEventListener('click', async () => {
+  if (confirm('全てのアイテムのチェック状態をリセットしますか？')) {
     for (const item of items) {
       item.checked = false;
       await updateItem(item);
     }
     renderItems();
     if (currentDay) renderChecklist(currentDay);
-    status.textContent = '🔄 チェック状態をリセットしました';
+    renderTodayChecklist();
+    updateStats();
+    showStatus('🔄 チェック状態をリセットしました', 'success');
   }
 });
 
-// Export and import
-const exportBtn = document.getElementById('export-btn');
-const importFile = document.getElementById('import-file');
+// 編集モーダル
+function openEditModal(item) {
+  editingItem = item;
+  document.getElementById('edit-name').value = item.name;
+  document.getElementById('edit-category').value = item.category;
+  document.getElementById('edit-priority').value = item.priority;
+  document.getElementById('edit-code').value = item.code || '';
+  document.getElementById('edit-memo').value = item.memo || '';
+  
+  // 曜日チェックボックス
+  document.querySelectorAll('#edit-days input[type=checkbox]').forEach(cb => {
+    cb.checked = item.days.includes(cb.value);
+  });
+  
+  document.getElementById('edit-modal').classList.add('active');
+}
 
-exportBtn.addEventListener('click', async () => {
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('active');
+  editingItem = null;
+}
+
+document.getElementById('save-edit').addEventListener('click', async () => {
+  if (!editingItem) return;
+  
+  const name = document.getElementById('edit-name').value.trim();
+  if (!name) {
+    showStatus('アイテム名を入力してください', 'warning');
+    return;
+  }
+  
+  const days = Array.from(document.querySelectorAll('#edit-days input[type=checkbox]:checked'))
+                   .map(cb => cb.value);
+  
+  editingItem.name = name;
+  editingItem.category = document.getElementById('edit-category').value;
+  editingItem.priority = document.getElementById('edit-priority').value;
+  editingItem.code = document.getElementById('edit-code').value.trim();
+  editingItem.memo = document.getElementById('edit-memo').value.trim();
+  editingItem.days = days;
+  editingItem.updatedAt = new Date().toISOString();
+  
+  try {
+    await updateItem(editingItem);
+    renderItems();
+    if (currentDay) renderChecklist(currentDay);
+    renderTodayChecklist();
+    updateStats();
+    closeEditModal();
+    showStatus('✅ 更新しました', 'success');
+  } catch (err) {
+    showStatus('更新に失敗しました: ' + err.message, 'error');
+  }
+});
+
+// 全削除
+document.getElementById('clear-items').addEventListener('click', async () => {
+  if (confirm('本当に全てのアイテムを削除しますか？\nこの操作は取り消せません。')) {
+    try {
+      await clearItems();
+      items = [];
+      renderItems();
+      renderTodayChecklist();
+      updateStats();
+      document.getElementById('checklist').innerHTML = '';
+      showStatus('🗑 全てのアイテムを削除しました', 'success');
+    } catch (err) {
+      showStatus('削除に失敗しました: ' + err.message, 'error');
+    }
+  }
+});
+
+// データ管理
+document.getElementById('export-btn').addEventListener('click', async () => {
   try {
     const allItems = await getAllItems();
     const exportData = {
       items: allItems,
       exportedAt: new Date().toISOString(),
-      version: '1.0'
+      version: '2.0',
+      app: 'wasuremono-pro'
     };
     const dataStr = JSON.stringify(exportData, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `忘れ物防止データ_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `忘れ物防止Pro_${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    statusMsg.textContent = '✅ データをエクスポートしました';
-    setTimeout(() => statusMsg.textContent = '', 3000);
+    showStatus('✅ データをエクスポートしました', 'success');
   } catch (err) {
-    alert('エクスポートに失敗しました: ' + err.message);
+    showStatus('エクスポートに失敗しました: ' + err.message, 'error');
   }
 });
 
-importFile.addEventListener('change', async e => {
+document.getElementById('import-file').addEventListener('change', async e => {
   const file = e.target.files[0];
   if (!file) return;
   
@@ -742,83 +1246,129 @@ importFile.addEventListener('change', async e => {
   reader.onload = async () => {
     try {
       const data = JSON.parse(reader.result);
-      const importItems = data.items || data; // 新旧フォーマット対応
+      const importItems = data.items || data;
       
       if (!Array.isArray(importItems)) {
         throw new Error('不正なデータ形式です');
       }
       
-      if (confirm(`${importItems.length}件の教材をインポートします。\n既存のデータは削除されます。続行しますか？`)) {
-        await clearAllItems();
+      if (confirm(`${importItems.length}件のアイテムをインポートします。\n既存のデータは削除されます。続行しますか？`)) {
+        await clearItems();
         
         for (const item of importItems) {
-          delete item.id; // 新規IDを付与
-          item.checked = false; // チェック状態はリセット
+          delete item.id;
+          item.checked = false;
+          // デフォルト値設定
+          if (!item.category) item.category = 'その他';
+          if (!item.priority) item.priority = '普通';
+          if (!item.days) item.days = [];
           await addItem(item);
         }
         
         await loadItems();
-        statusMsg.textContent = `✅ ${importItems.length}件の教材をインポートしました`;
-        setTimeout(() => statusMsg.textContent = '', 3000);
+        showStatus(`✅ ${importItems.length}件のアイテムをインポートしました`, 'success');
       }
     } catch (err) {
-      alert('インポートに失敗しました: ' + err.message);
+      showStatus('インポートに失敗しました: ' + err.message, 'error');
     }
   };
   reader.readAsText(file);
   e.target.value = '';
 });
 
-// PWA install functionality
+// バックアップ・復元（LocalStorage利用）
+document.getElementById('backup-btn').addEventListener('click', async () => {
+  try {
+    const allItems = await getAllItems();
+    localStorage.setItem('wasuremono-backup', JSON.stringify({
+      items: allItems,
+      backupAt: new Date().toISOString()
+    }));
+    showStatus('💾 バックアップを作成しました', 'success');
+  } catch (err) {
+    showStatus('バックアップに失敗しました: ' + err.message, 'error');
+  }
+});
+
+document.getElementById('restore-btn').addEventListener('click', async () => {
+  try {
+    const backup = localStorage.getItem('wasuremono-backup');
+    if (!backup) {
+      showStatus('バックアップが見つかりません', 'warning');
+      return;
+    }
+    
+    const data = JSON.parse(backup);
+    if (confirm(`バックアップ（${new Date(data.backupAt).toLocaleString()}）から復元しますか？\n現在のデータは削除されます。`)) {
+      await clearItems();
+      
+      for (const item of data.items) {
+        delete item.id;
+        await addItem(item);
+      }
+      
+      await loadItems();
+      showStatus('🔄 バックアップから復元しました', 'success');
+    }
+  } catch (err) {
+    showStatus('復元に失敗しました: ' + err.message, 'error');
+  }
+});
+
+// データ読み込み
+async function loadItems() {
+  try {
+    items = await getAllItems();
+    renderItems();
+    renderTodayChecklist();
+    updateStats();
+  } catch (err) {
+    console.error('Load items failed:', err);
+  }
+}
+
+// PWAインストール
 let deferredPrompt;
 const installBtn = document.getElementById('install-pwa');
-const installBtnFloat = document.getElementById('install-btn-float');
 
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
   installBtn.style.display = 'inline-block';
-  installBtnFloat.style.display = 'block';
 });
 
-[installBtn, installBtnFloat].forEach(btn => {
-  btn.addEventListener('click', async () => {
-    if (!deferredPrompt) {
-      alert('このブラウザではPWAインストールがサポートされていません');
-      return;
-    }
-    
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      console.log('PWA install accepted');
-      installBtn.style.display = 'none';
-      installBtnFloat.style.display = 'none';
-    }
-    
-    deferredPrompt = null;
-  });
+installBtn.addEventListener('click', async () => {
+  if (!deferredPrompt) {
+    showStatus('このブラウザではPWAインストールがサポートされていません', 'warning');
+    return;
+  }
+  
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  
+  if (outcome === 'accepted') {
+    installBtn.style.display = 'none';
+    showStatus('📱 PWAがインストールされました', 'success');
+  }
+  
+  deferredPrompt = null;
 });
 
-// Initialize app
+// 初期化
 openDB().then(async () => {
   await loadItems();
   selectCurrentDay();
   
-  // Show welcome message for first-time users
   if (items.length === 0) {
     setTimeout(() => {
-      status.textContent = '👋 初回利用ありがとうございます！まずは教材を追加してみましょう';
+      showStatus('👋 ようこそ！まずは教材や持ち物を追加してみましょう', 'info');
     }, 1000);
   }
 });
 
-// Cleanup when page unloads
+// クリーンアップ
 window.addEventListener('beforeunload', () => {
-  if (isScanning) {
-    stopScanning();
-  }
+  if (isScanning) stopScanning();
 });
 
 </script>
