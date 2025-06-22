@@ -37,7 +37,7 @@
   }
   
   /* スキャナー */
-  #viewport {
+  #viewport, #check-viewport {
     position: relative; width: 100%; height: 250px;
     border: 2px solid #007bff; border-radius: 12px;
     overflow: hidden; background: #000; margin-bottom: 1em;
@@ -89,6 +89,16 @@
     background: linear-gradient(135deg, #d4edda, #c3e6cb);
     border-color: #28a745;
   }
+  .item.scanned {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border-color: #2196f3;
+    animation: pulse 0.6s ease-in-out;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
   .item-checkbox { margin-right: 0.8em; transform: scale(1.2); }
   .item-info { flex: 1; }
   .item-name { font-weight: 600; color: #333; }
@@ -136,7 +146,7 @@
   .preset-btn.active { background: #007bff; color: white; }
   
   /* ステータス */
-  #status {
+  #status, #check-status {
     padding: 0.8em; border-radius: 8px; margin-bottom: 1em;
     text-align: center; font-weight: 500;
     background: #e3f2fd; color: #1976d2; border: 2px solid #bbdefb;
@@ -157,6 +167,17 @@
   .stat-number { font-size: 1.5em; font-weight: 700; color: #007bff; }
   .stat-label { font-size: 0.8em; color: #666; margin-top: 0.2em; }
   
+  /* スキャンモード切り替え */
+  .scan-mode {
+    display: flex; background: #f8f9fa; border-radius: 8px;
+    margin-bottom: 1em; overflow: hidden; border: 2px solid #dee2e6;
+  }
+  .scan-mode-btn {
+    flex: 1; padding: 0.6em; border: none; background: transparent;
+    cursor: pointer; font-weight: 500; transition: all 0.2s;
+  }
+  .scan-mode-btn.active { background: #007bff; color: white; }
+  
   /* モーダル */
   .modal {
     display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -169,6 +190,20 @@
   }
   .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1em; }
   .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; }
+  
+  /* チェック結果表示 */
+  .check-result {
+    padding: 1em; border-radius: 8px; margin-bottom: 1em;
+    text-align: center; font-weight: 600; display: none;
+  }
+  .check-result.found {
+    background: #d4edda; color: #155724; border: 2px solid #c3e6cb;
+    display: block;
+  }
+  .check-result.not-found {
+    background: #fff3cd; color: #856404; border: 2px solid #ffeaa7;
+    display: block;
+  }
   
   /* レスポンシブ */
   @media (max-width: 480px) {
@@ -190,7 +225,7 @@
 
 <nav class="tab-nav">
 <button class="tab-btn active" data-tab="quick">⚡ クイック</button>
-<button class="tab-btn" data-tab="scanner">📱 スキャン</button>
+<button class="tab-btn" data-tab="scanner">📱 登録</button>
 <button class="tab-btn" data-tab="items">📋 一覧</button>
 <button class="tab-btn" data-tab="check">✅ チェック</button>
 <button class="tab-btn" data-tab="settings">⚙️ 設定</button>
@@ -239,7 +274,7 @@
 </div>
 </div>
 
-<!-- スキャンタブ -->
+<!-- スキャンタブ（登録用） -->
 <div id="scanner" class="tab-content">
 <div class="card">
 <div id="viewport"><div class="guide"></div></div>
@@ -343,12 +378,37 @@
 <button class="preset-btn" data-day="土">土</button>
 <button class="preset-btn" data-day="日">日</button>
 </div>
+</div>
+
+<div class="card">
+<h3>📷 バーコードチェック</h3>
+<div class="scan-mode">
+<button class="scan-mode-btn active" data-mode="manual">✋ 手動チェック</button>
+<button class="scan-mode-btn" data-mode="scan">📱 スキャンチェック</button>
+</div>
+
+<div id="manual-check-mode">
 <div id="check-progress" style="text-align: center; margin: 1em 0; font-weight: 600;"></div>
 <ul id="checklist" class="item-list"></ul>
 <div style="text-align: center; margin-top: 1em;">
 <button id="check-all" class="btn btn-success btn-sm">✅ 全選択</button>
 <button id="uncheck-all" class="btn btn-warning btn-sm">⭕ 全解除</button>
 <button id="reset-check" class="btn btn-secondary btn-sm">🔄 リセット</button>
+</div>
+</div>
+
+<div id="scan-check-mode" style="display: none;">
+<div id="check-viewport"><div class="guide"></div></div>
+<div id="check-status">📷 バーコードを読み取って自動チェック</div>
+<div style="text-align: center;">
+<button id="check-scan-btn" class="btn btn-primary">🚀 スキャン開始</button>
+<button id="check-stop-btn" class="btn btn-secondary" disabled>⏹ 停止</button>
+</div>
+<div id="check-result" class="check-result"></div>
+<div style="margin-top: 1em;">
+<h4>📊 スキャン結果</h4>
+<ul id="scan-results" class="item-list"></ul>
+</div>
 </div>
 </div>
 </div>
@@ -398,7 +458,7 @@
 <li>オフライン動作</li>
 <li>ホーム画面追加</li>
 <li>データ永続保存</li>
-<li>マルチデバイス対応</li>
+<li>バーコードチェック</li>
 </ul>
 <button id="install-pwa" class="btn btn-success" style="display:none;">📱 ホーム画面に追加</button>
 </div>
@@ -469,7 +529,7 @@
 
 <script src="https://unpkg.com/quagga@0.12.1/dist/quagga.min.js"></script>
 <script>
-// PWA設定（前回と同じ）
+// PWA設定
 const manifestData = {
   "name": "忘れ物防止システム Pro",
   "short_name": "忘れ物Pro",
@@ -494,7 +554,7 @@ document.head.appendChild(link);
 
 // Service Worker登録
 const swCode = `
-const CACHE_NAME = 'wasuremono-pro-v1';
+const CACHE_NAME = 'wasuremono-pro-v2';
 const urlsToCache = ['./', 'https://unpkg.com/quagga@0.12.1/dist/quagga.min.js'];
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(urlsToCache).catch(() => c.add('./')))));
 self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('./')))));
@@ -523,6 +583,7 @@ function openDB() {
         const store = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
         store.createIndex('category', 'category', { unique: false });
         store.createIndex('name', 'name', { unique: false });
+        store.createIndex('code', 'code', { unique: false });
       }
     };
   });
@@ -583,16 +644,20 @@ function clearItems() {
 let items = [];
 let currentDay = null;
 let currentCategory = 'all';
-let sortBy = 'name'; // name, category, priority, created
+let sortBy = 'name';
 let isScanning = false;
+let isCheckScanning = false;
 let editingItem = null;
+let checkMode = 'manual'; // manual or scan
+let scanResults = new Map(); // バーコード別の検出結果
 
 // UI要素
 const tabs = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
 const status = document.getElementById('status');
+const checkStatus = document.getElementById('check-status');
 
-// タブ切り替え[2]
+// タブ切り替え
 tabs.forEach(tab => {
   tab.addEventListener('click', () => {
     tabs.forEach(t => t.classList.remove('active'));
@@ -602,7 +667,6 @@ tabs.forEach(tab => {
       tc.classList.toggle('active', tc.id === target);
     });
     
-    // タブ切り替え時の処理
     if (target === 'quick') {
       updateStats();
       renderTodayChecklist();
@@ -610,8 +674,27 @@ tabs.forEach(tab => {
       renderItems();
     } else if (target === 'check') {
       if (!currentDay) selectCurrentDay();
+      renderScanResults();
     } else if (target === 'settings') {
       updateDetailedStats();
+    }
+  });
+});
+
+// スキャンモード切り替え
+document.querySelectorAll('.scan-mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.scan-mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    checkMode = btn.dataset.mode;
+    
+    if (checkMode === 'manual') {
+      document.getElementById('manual-check-mode').style.display = 'block';
+      document.getElementById('scan-check-mode').style.display = 'none';
+      if (isCheckScanning) stopCheckScanning();
+    } else {
+      document.getElementById('manual-check-mode').style.display = 'none';
+      document.getElementById('scan-check-mode').style.display = 'block';
     }
   });
 });
@@ -682,7 +765,6 @@ function createItemElement(item, isQuick = false) {
     if (!isQuick) renderItems();
     if (isQuick) renderTodayChecklist();
     
-    // フィードバック[1]
     if (checkbox.checked && navigator.vibrate) {
       navigator.vibrate([100, 50, 100]);
     }
@@ -744,14 +826,8 @@ function createItemElement(item, isQuick = false) {
 // カテゴリーアイコン取得
 function getCategoryIcon(category) {
   const icons = {
-    '教材': '📚',
-    '文房具': '✏️',
-    '体育用品': '⚽',
-    '弁当・水筒': '🍱',
-    '制服・服装': '👔',
-    '楽器': '🎵',
-    '部活用品': '🏃',
-    'その他': '📦'
+    '教材': '📚', '文房具': '✏️', '体育用品': '⚽', '弁当・水筒': '🍱',
+    '制服・服装': '👔', '楽器': '🎵', '部活用品': '🏃', 'その他': '📦'
   };
   return icons[category] || '📦';
 }
@@ -781,12 +857,7 @@ document.getElementById('quick-add').addEventListener('click', async () => {
   const today = days[new Date().getDay()];
   
   const success = await addNewItem({
-    name,
-    category,
-    priority: '普通',
-    days: [today],
-    code: '',
-    memo: ''
+    name, category, priority: '普通', days: [today], code: '', memo: ''
   });
   
   if (success) {
@@ -797,21 +868,15 @@ document.getElementById('quick-add').addEventListener('click', async () => {
   }
 });
 
-// Enter キー対応
 document.getElementById('quick-name').addEventListener('keypress', e => {
-  if (e.key === 'Enter') {
-    document.getElementById('quick-add').click();
-  }
+  if (e.key === 'Enter') document.getElementById('quick-add').click();
 });
 
 // クイックスキャン
 document.getElementById('quick-scan').addEventListener('click', () => {
-  // スキャンタブに切り替え
   document.querySelector('[data-tab="scanner"]').click();
   setTimeout(() => {
-    if (!isScanning) {
-      document.getElementById('scan-btn').click();
-    }
+    if (!isScanning) document.getElementById('scan-btn').click();
   }, 500);
 });
 
@@ -819,7 +884,6 @@ document.getElementById('quick-scan').addEventListener('click', () => {
 async function addNewItem(itemData) {
   if (!itemData.name.trim()) return false;
   
-  // 重複チェック（バーコードまたは名前）
   if (itemData.code && items.some(i => i.code === itemData.code)) {
     showStatus('同じバーコードのアイテムが既に登録されています', 'warning');
     return false;
@@ -864,7 +928,6 @@ document.getElementById('add-detail').addEventListener('click', async () => {
   
   const success = await addNewItem({ name, category, priority, code, memo, days });
   if (success) {
-    // フォームクリア
     document.getElementById('detail-name').value = '';
     document.getElementById('detail-code').value = '';
     document.getElementById('detail-memo').value = '';
@@ -877,16 +940,19 @@ document.getElementById('add-detail').addEventListener('click', async () => {
   }
 });
 
-// バーコードスキャナー設定[1][3]
+// バーコードスキャナー設定（登録用）
 const scanBtn = document.getElementById('scan-btn');
 const stopBtn = document.getElementById('stop-btn');
 const viewport = document.getElementById('viewport');
 
+// バーコードスキャナー設定（チェック用）
+const checkScanBtn = document.getElementById('check-scan-btn');
+const checkStopBtn = document.getElementById('check-stop-btn');
+const checkViewport = document.getElementById('check-viewport');
+
 const quaggaConfig = {
   inputStream: {
-    name: 'Live',
-    type: 'LiveStream',
-    target: viewport,
+    name: 'Live', type: 'LiveStream',
     constraints: {
       facingMode: 'environment',
       width: { min: 640, ideal: 800, max: 1280 },
@@ -895,22 +961,18 @@ const quaggaConfig = {
     area: { top: '20%', right: '15%', left: '15%', bottom: '20%' },
     willReadFrequently: true
   },
-  frequency: 8,
-  numOfWorkers: 2,
-  decoder: {
-    readers: ['ean_reader', 'ean_8_reader', 'code_128_reader'],
-    multiple: false
-  },
+  frequency: 8, numOfWorkers: 2,
+  decoder: { readers: ['ean_reader', 'ean_8_reader', 'code_128_reader'], multiple: false },
   locate: true,
   locator: { patchSize: 'medium', halfSample: false },
   debug: { drawBoundingBox: true, showFrequency: false, drawScanline: true, showPattern: false }
 };
 
+// 登録用スキャン検出
 function onDetected(result) {
   const code = result.codeResult.code;
   if (!code) return;
   
-  // 既存チェック
   const existing = items.find(i => i.code === code);
   if (existing) {
     status.textContent = `✅ 既に登録済み: ${existing.name} (${code})`;
@@ -925,14 +987,97 @@ function onDetected(result) {
   if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100]);
 }
 
+// チェック用スキャン検出
+function onCheckDetected(result) {
+  const code = result.codeResult.code;
+  if (!code) return;
+  
+  // 現在の曜日のアイテムから検索
+  const dayItems = items.filter(i => i.days.includes(currentDay));
+  const foundItem = dayItems.find(i => i.code === code);
+  
+  if (foundItem) {
+    // アイテム発見 - 自動チェック
+    if (!foundItem.checked) {
+      foundItem.checked = true;
+      updateItem(foundItem);
+      updateStats();
+      renderChecklist(currentDay);
+      
+      // スキャン結果に追加
+      scanResults.set(code, {
+        item: foundItem,
+        timestamp: new Date(),
+        status: 'checked'
+      });
+      
+      checkStatus.textContent = `✅ チェック完了: ${foundItem.name}`;
+      checkStatus.className = 'status-success';
+      
+      document.getElementById('check-result').className = 'check-result found';
+      document.getElementById('check-result').innerHTML = `
+        <div>✅ <strong>${foundItem.name}</strong></div>
+        <div style="font-size: 0.9em; margin-top: 0.3em;">自動でチェックしました</div>
+      `;
+      
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100]);
+      
+    } else {
+      // 既にチェック済み
+      checkStatus.textContent = `ℹ️ 既にチェック済み: ${foundItem.name}`;
+      checkStatus.className = 'status-warning';
+      
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    }
+    
+  } else {
+    // 未登録または今日不要なアイテム
+    const anyItem = items.find(i => i.code === code);
+    
+    if (anyItem) {
+      // 登録済みだが今日は不要
+      checkStatus.textContent = `⚠️ ${currentDay}曜日には不要: ${anyItem.name}`;
+      checkStatus.className = 'status-warning';
+      
+      document.getElementById('check-result').className = 'check-result not-found';
+      document.getElementById('check-result').innerHTML = `
+        <div>⚠️ <strong>${anyItem.name}</strong></div>
+        <div style="font-size: 0.9em; margin-top: 0.3em;">${currentDay}曜日のリストにありません</div>
+      `;
+    } else {
+      // 完全に未登録
+      checkStatus.textContent = `❌ 未登録アイテム: ${code}`;
+      checkStatus.className = 'status-error';
+      
+      document.getElementById('check-result').className = 'check-result not-found';
+      document.getElementById('check-result').innerHTML = `
+        <div>❌ <strong>未登録アイテム</strong></div>
+        <div style="font-size: 0.9em; margin-top: 0.3em;">バーコード: ${code}</div>
+        <div style="font-size: 0.8em; margin-top: 0.3em;">登録タブから追加してください</div>
+      `;
+    }
+    
+    if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+  }
+  
+  renderScanResults();
+  
+  // 3秒後にステータスリセット
+  setTimeout(() => {
+    checkStatus.textContent = '📷 バーコードを読み取って自動チェック';
+    checkStatus.className = '';
+    document.getElementById('check-result').className = 'check-result';
+  }, 3000);
+}
+
+// 登録用スキャン開始・停止
 function startScanning() {
   if (isScanning) return;
   status.textContent = '🔧 カメラ初期化中...';
   
-  Quagga.init(quaggaConfig, err => {
+  Quagga.init({...quaggaConfig, inputStream: {...quaggaConfig.inputStream, target: viewport}}, err => {
     if (err) {
       status.textContent = `❌ カメラエラー: ${err.message || err}`;
-      console.error(err);
       return;
     }
     
@@ -955,8 +1100,78 @@ function stopScanning() {
   stopBtn.disabled = true;
 }
 
+// チェック用スキャン開始・停止
+function startCheckScanning() {
+  if (isCheckScanning) return;
+  checkStatus.textContent = '🔧 カメラ初期化中...';
+  
+  Quagga.init({...quaggaConfig, inputStream: {...quaggaConfig.inputStream, target: checkViewport}}, err => {
+    if (err) {
+      checkStatus.textContent = `❌ カメラエラー: ${err.message || err}`;
+      return;
+    }
+    
+    Quagga.start();
+    isCheckScanning = true;
+    Quagga.onDetected(onCheckDetected);
+    checkStatus.textContent = '🔍 バーコードを緑枠内に合わせてください';
+    checkScanBtn.disabled = true;
+    checkStopBtn.disabled = false;
+  });
+}
+
+function stopCheckScanning() {
+  if (!isCheckScanning) return;
+  Quagga.offDetected(onCheckDetected);
+  Quagga.stop();
+  isCheckScanning = false;
+  checkStatus.textContent = '⏹ スキャン停止';
+  checkScanBtn.disabled = false;
+  checkStopBtn.disabled = true;
+}
+
 scanBtn.addEventListener('click', startScanning);
 stopBtn.addEventListener('click', stopScanning);
+checkScanBtn.addEventListener('click', startCheckScanning);
+checkStopBtn.addEventListener('click', stopCheckScanning);
+
+// スキャン結果表示
+function renderScanResults() {
+  const list = document.getElementById('scan-results');
+  
+  if (scanResults.size === 0) {
+    list.innerHTML = '<li style="text-align:center; color:#999; padding:1em;">スキャン結果なし</li>';
+    return;
+  }
+  
+  list.innerHTML = '';
+  
+  // 時間順でソート（新しい順）
+  const sortedResults = Array.from(scanResults.entries())
+    .sort(([,a], [,b]) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+  sortedResults.forEach(([code, result]) => {
+    const li = document.createElement('li');
+    li.className = 'item scanned';
+    
+    const time = result.timestamp.toLocaleTimeString();
+    const statusIcon = result.status === 'checked' ? '✅' : '❌';
+    
+    li.innerHTML = `
+      <div style="display: flex; align-items: center; width: 100%;">
+        <div style="margin-right: 0.8em; font-size: 1.2em;">${statusIcon}</div>
+        <div style="flex: 1;">
+          <div style="font-weight: 600;">${result.item ? result.item.name : '未登録アイテム'}</div>
+          <div style="font-size: 0.8em; color: #666;">
+            ${code} • ${time}
+          </div>
+        </div>
+      </div>
+    `;
+    
+    list.appendChild(li);
+  });
+}
 
 // アイテム一覧表示
 function renderItems() {
@@ -965,12 +1180,10 @@ function renderItems() {
   
   let filtered = items;
   
-  // カテゴリーフィルター
   if (currentCategory !== 'all') {
     filtered = filtered.filter(i => i.category === currentCategory);
   }
   
-  // 検索フィルター
   const searchTerm = document.getElementById('search-input').value.toLowerCase();
   if (searchTerm) {
     filtered = filtered.filter(i => 
@@ -981,7 +1194,6 @@ function renderItems() {
     );
   }
   
-  // ソート
   filtered.sort((a, b) => {
     if (sortBy === 'name') return a.name.localeCompare(b.name);
     if (sortBy === 'category') return a.category.localeCompare(b.category);
@@ -1056,7 +1268,6 @@ function renderChecklist(day) {
   const progress = document.getElementById('check-progress');
   currentDay = day;
   
-  // プリセットボタン状態更新
   document.querySelectorAll('.preset-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.day === day);
   });
@@ -1081,7 +1292,6 @@ function renderChecklist(day) {
   
   list.innerHTML = '';
   
-  // 重要度でソート
   filtered.sort((a, b) => {
     const priorities = { '必須': 3, '重要': 2, '普通': 1 };
     return priorities[b.priority] - priorities[a.priority];
@@ -1099,6 +1309,9 @@ function renderChecklist(day) {
 document.getElementById('preset-days').addEventListener('click', e => {
   if (e.target.classList.contains('preset-btn')) {
     renderChecklist(e.target.dataset.day);
+    // スキャン結果もクリア
+    scanResults.clear();
+    renderScanResults();
   }
 });
 
@@ -1138,6 +1351,9 @@ document.getElementById('reset-check').addEventListener('click', async () => {
     if (currentDay) renderChecklist(currentDay);
     renderTodayChecklist();
     updateStats();
+    // スキャン結果もクリア
+    scanResults.clear();
+    renderScanResults();
     showStatus('🔄 チェック状態をリセットしました', 'success');
   }
 });
@@ -1151,7 +1367,6 @@ function openEditModal(item) {
   document.getElementById('edit-code').value = item.code || '';
   document.getElementById('edit-memo').value = item.memo || '';
   
-  // 曜日チェックボックス
   document.querySelectorAll('#edit-days input[type=checkbox]').forEach(cb => {
     cb.checked = item.days.includes(cb.value);
   });
@@ -1207,6 +1422,8 @@ document.getElementById('clear-items').addEventListener('click', async () => {
       renderTodayChecklist();
       updateStats();
       document.getElementById('checklist').innerHTML = '';
+      scanResults.clear();
+      renderScanResults();
       showStatus('🗑 全てのアイテムを削除しました', 'success');
     } catch (err) {
       showStatus('削除に失敗しました: ' + err.message, 'error');
@@ -1214,7 +1431,7 @@ document.getElementById('clear-items').addEventListener('click', async () => {
   }
 });
 
-// データ管理
+// データ管理（エクスポート・インポート等）
 document.getElementById('export-btn').addEventListener('click', async () => {
   try {
     const allItems = await getAllItems();
@@ -1258,7 +1475,6 @@ document.getElementById('import-file').addEventListener('change', async e => {
         for (const item of importItems) {
           delete item.id;
           item.checked = false;
-          // デフォルト値設定
           if (!item.category) item.category = 'その他';
           if (!item.priority) item.priority = '普通';
           if (!item.days) item.days = [];
@@ -1266,6 +1482,8 @@ document.getElementById('import-file').addEventListener('change', async e => {
         }
         
         await loadItems();
+        scanResults.clear();
+        renderScanResults();
         showStatus(`✅ ${importItems.length}件のアイテムをインポートしました`, 'success');
       }
     } catch (err) {
@@ -1276,7 +1494,7 @@ document.getElementById('import-file').addEventListener('change', async e => {
   e.target.value = '';
 });
 
-// バックアップ・復元（LocalStorage利用）
+// バックアップ・復元
 document.getElementById('backup-btn').addEventListener('click', async () => {
   try {
     const allItems = await getAllItems();
@@ -1308,6 +1526,8 @@ document.getElementById('restore-btn').addEventListener('click', async () => {
       }
       
       await loadItems();
+      scanResults.clear();
+      renderScanResults();
       showStatus('🔄 バックアップから復元しました', 'success');
     }
   } catch (err) {
@@ -1369,6 +1589,7 @@ openDB().then(async () => {
 // クリーンアップ
 window.addEventListener('beforeunload', () => {
   if (isScanning) stopScanning();
+  if (isCheckScanning) stopCheckScanning();
 });
 
 </script>
