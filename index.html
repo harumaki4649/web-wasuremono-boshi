@@ -1615,6 +1615,7 @@ document.getElementById('restore-btn').addEventListener('click', async () => {
       }
       
       await loadItems();
+      updateDetailedStats();
       scanResults.clear();
       renderScanResults();
       showStatus('🔄 バックアップから復元しました', 'success');
