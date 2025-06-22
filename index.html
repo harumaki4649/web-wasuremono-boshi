@@ -1571,6 +1571,7 @@ document.getElementById('import-file').addEventListener('change', async e => {
         }
         
         await loadItems();
+        updateDetailedStats();
         scanResults.clear();
         renderScanResults();
         showStatus(`✅ ${importItems.length}件のアイテムをインポートしました`, 'success');
