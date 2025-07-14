@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>新しいタブで開きます...</title>
+    <script>
+        window.addEventListener("DOMContentLoaded", () => {
+            const params = new URLSearchParams(window.location.search);
+            const targetUrl = params.get("url");
+
+            if (targetUrl) {
+                setTimeout(() => {
+                    window.open(targetUrl, "_blank");
+                }, 3000); // 3秒後に新しいタブで開く
+            } else {
+                document.body.innerHTML = "<h2>URLパラメータが指定されていません。</h2>";
+            }
+        });
+    </script>
+</head>
+<body>
+    <h1>3秒後に新しいタブでページを開きます...</h1>
+</body>
+</html>
