@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>リダイレクト中...</title>
+    <script>
+        window.addEventListener("DOMContentLoaded", () => {
+            const params = new URLSearchParams(window.location.search);
+            const targetUrl = params.get("url");
+
+            if (targetUrl) {
+                setTimeout(() => {
+                    // JavaScriptでリダイレクト
+                    window.location.href = targetUrl;
+                }, 5000); // 5秒後
+            } else {
+                document.body.innerHTML = "<h2>リダイレクト先のURLが指定されていません。</h2>";
+            }
+        });
+    </script>
+</head>
+<body>
+    <h1>5秒後に移動します...</h1>
+</body>
+</html>
